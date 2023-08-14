@@ -8,14 +8,15 @@ exports.search = async (req, res) => {
                  SELECT * FROM found_items WHERE UniqueID LIKE ? 
                  UNION 
                  SELECT * FROM matched_items WHERE UniqueID LIKE ?`;
-    const result = await db.query(sql, [
+    const connection = await db();
+    const [rows, fields] = await connection.query(sql, [
       `%${uniqueId}%`,
       `%${uniqueId}%`,
       `%${uniqueId}%`,
     ]);
-
-    if (result[0].length > 0) {
-      res.json(result[0]);
+    connection.release();
+    if (rows.length > 0) {
+      res.send(rows);
     } else {
       res.send({ message: "No item found!", status: false });
     }

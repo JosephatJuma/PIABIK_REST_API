@@ -3,21 +3,34 @@ const db = require("../../database/database");
 exports.followUp = async (req, res) => {
   try {
     const code = req.params.secretCode;
+    //check first in matched Items
     const sql = `SELECT * FROM matched_items WHERE SecretCode = ?`;
-    const matched = await db.query(sql, [code]);
-    if (matched[0].length > 0) {
-      res.json(matched[0]);
-    } else {
+    const connection = await db();
+    const [rows, fields] = await connection.query(sql, [code]);
+    connection.release();
+
+    if (rows.length > 0) {
+      res.send(rows);
+    } //If not in matched then check in lost items
+    else {
       const sql1 = `SELECT * FROM lost_items WHERE SecretCode = ?`;
-      const lost = await db.query(sql1, [code]);
-      if (lost[0].length > 0) {
-        res.json(lost[0]);
-      } else {
+      const connection1 = await db();
+      const [rows, fields] = await connection.query(sql1, [code]);
+      connection1.release();
+      if (rows.length > 0) {
+        res.send(rows);
+      }
+      //Not in lost also then check in found items
+      else {
         const sql2 = `SELECT * FROM found_items WHERE SecretCode = ?`;
-        const found = await db.query(sql2, [code]);
-        if (found[0].length > 0) {
-          res.json(found[0]);
-        } else {
+        const connection2 = await db();
+        const [rows, fields] = await connection.query(sql2, [code]);
+        connection2.release();
+        if (rows.length > 0) {
+          res.send(rows);
+        }
+        //If there is nothing totally
+        else {
           res.send({ message: "No item found!", status: false });
         }
       }
