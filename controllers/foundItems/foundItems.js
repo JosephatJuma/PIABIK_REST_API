@@ -12,18 +12,38 @@ exports.getFoundItems = async (req, res) => {
 };
 
 exports.postFoundItem = async (req, res) => {
-  const { category, name, description, location, contact, uniqueId } = req.body;
+  const type = "Found";
+  const {
+    uniqueId,
+    category,
+    speciality,
+    phone,
+    firstName,
+    lastName,
+    status,
+    datePosted,
+    secretCode,
+  } = req.body;
   try {
-    const sql = `INSERT INTO found_items (category, name, description, location, contact, uniqueId) VALUES (?, ?,?,?, ?, ?)`;
-    await db.query(sql, [
-      category,
-      name,
-      description,
-      location,
-      contact,
-      uniqueId,
-    ]);
-    res.send("Found items successfully posted");
+    const sql = `INSERT INTO found_items ( UniqueID,Category,Type,Speciality,Phone,FirstName,LastName,Status,DatePosted,SecretCode) VALUES (?, ?,?,?, ?, ?,?,?,?,?)`;
+    const connection = await db();
+    await connection
+      .query(sql, [
+        uniqueId,
+        category,
+        type,
+        speciality,
+        phone,
+        firstName,
+        lastName,
+        status,
+        datePosted,
+        secretCode,
+      ])
+      .then((result) => {
+        connection.release();
+        res.send({ message: "Found item successfully posted", status: true });
+      });
   } catch (error) {
     res.status(500).send(error.message);
   }
